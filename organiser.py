@@ -208,7 +208,8 @@ with tab_logging:
         with col2:
             course = st.selectbox("Course*", course_codes)
         with col3:
-            lesson_num = st.number_input("Lesson Number (1-12)*", min_value=1, max_value=12, value=1, step=1)
+            lesson_options = list(range(1, 13)) + ["Misc"]
+            lesson_num = st.selectbox("Lesson Number*", lesson_options)
             
         details = st.text_input("Details (Lecture recordings, worksheets, revision, etc.)")
         
@@ -246,7 +247,7 @@ with tab_logging:
                 "user_id": USER_ID,
                 "trimester_name": selected_tri,
                 "course_code": course,
-                "lesson_num": lesson_num,
+                "lesson_num": str(lesson_num),
                 "details": details,
                 "date_logged": str(log_date),
                 "planned_start": str(p_start) if p_start else None,
@@ -291,7 +292,7 @@ with tab_logging:
             end_iso = f"{end_date_str}T{row['actual_end']}"
             
             cal_events.append({
-                "title": f"{row['course_code']} (L{row['lesson_num']})",
+                "title": f"{row['course_code']} (L{row['lesson_num']})" if str(row['lesson_num']).isdigit() else f"{row['course_code']} ({row['lesson_num']})",
                 "start": start_iso,
                 "end": end_iso,
                 "backgroundColor": color_map.get(row['course_code'], "#3B82F6"),
@@ -442,10 +443,15 @@ with tab_analytics:
     )
 
     matrix_rows = []
+    
+    # Cast column to string to handle mixed legacy int data and new text data
+    df["lesson_num"] = df["lesson_num"].astype(str)
 
-    # Rows for Lesson 1 to 12
-    for l_num in range(1, 13):
-      row_dict = {"Lesson": f"Lsn {l_num}"}
+    # Rows for Lesson 1 to 12 + Misc
+    lesson_categories = [str(i) for i in range(1, 13)] + ["Misc"]
+
+    for l_num in lesson_categories:
+      row_dict = {"Lesson": f"Lsn {l_num}" if l_num.isdigit() else l_num}
       tot_lsn_mins = 0
 
       for code in course_codes:
