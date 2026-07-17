@@ -266,7 +266,7 @@ with tab_logging:
     # -----------------------------------------------------
     # Calendar Preview (Past 7 Days)
     # -----------------------------------------------------
-    st.subheader("7-Day Activity Calendar Preview")
+    st.subheader("Activity Calendar Preview")
     st.caption("Click any event on the interactive calendar below to view details or delete/edit.")
     
     all_logs = get_logs(selected_tri)
@@ -278,7 +278,7 @@ with tab_logging:
         # Filter for past 7 days from today AEST
         today_date = get_aest_now().date()
         seven_days_ago = today_date - timedelta(days=7)
-        recent_logs = df_logs[(df_logs["date_logged"] >= seven_days_ago) & (df_logs["date_logged"] <= today_date)]
+        recent_logs = df_logs# [(df_logs["date_logged"] >= seven_days_ago) & (df_logs["date_logged"] <= today_date)]
         
         # Build events array for fullcalendar
         cal_events = []
