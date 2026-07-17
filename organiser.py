@@ -220,10 +220,10 @@ with tab_logging:
         with c2:
             p_end = st.time_input("Planned End (Optional)", value=None)
         with c3:
-            default_now = get_aest_now().time().replace(second=0, microsecond=0)
+            # default_now = get_aest_now().time().replace(second=0, microsecond=0)
             a_start = st.time_input("Actual Start*", value=None)
         with c4:
-            default_later = (get_aest_now() + timedelta(hours=1)).time().replace(second=0, microsecond=0)
+            # default_later = (get_aest_now() + timedelta(hours=1)).time().replace(second=0, microsecond=0)
             a_end = st.time_input("Actual End*", value=None)
             
         # Autocalculate values instantly on change
