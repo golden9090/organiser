@@ -223,7 +223,7 @@ with tab_logging:
             a_start = st.time_input("Actual Start*", value=default_now)
         with c4:
             default_later = (get_aest_now() + timedelta(hours=1)).time().replace(second=0, microsecond=0)
-            a_end = st.time_input("Actual End*", value=default_later)
+            a_end = st.time_input("Actual End*", value=default_now)
             
         # Autocalculate values instantly on change
         p_dur = calc_duration_mins(p_start, p_end) if (p_start and p_end) else None
