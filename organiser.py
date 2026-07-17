@@ -291,7 +291,7 @@ with tab_logging:
             end_iso = f"{end_date_str}T{row['actual_end']}"
             
             cal_events.append({
-                "title": f"{row['course_code']} (Lsn {row['lesson_num']})",
+                "title": f"{row['course_code']} (L{row['lesson_num']})",
                 "start": start_iso,
                 "end": end_iso,
                 "backgroundColor": color_map.get(row['course_code'], "#3B82F6"),
@@ -316,7 +316,16 @@ with tab_logging:
             "allDaySlot": False,
         }
         
-        cal_output = calendar(events=cal_events, options=cal_options, key="study_calendar")
+        cal_output = calendar(
+            events=cal_events, 
+            options=cal_options, 
+            custom_css="""
+                .fc-timegrid-slot {
+                    height: 4.0em !important; /* Default is 1.5em. Increase this to make rows even taller! */
+                }
+            """,
+            key="study_calendar"
+        )
         
         # Handle Event Click (Modal/Dialog for editing)
         if cal_output and "eventClick" in cal_output:
