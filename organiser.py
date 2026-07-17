@@ -307,11 +307,16 @@ with tab_logging:
             "initialView": "timeGridWeek",
             "slotMinTime": "00:00:00",
             "slotMaxTime": "23:00:00",
-            "height": 10000,
+            "height": 1000,
             "allDaySlot": False,
         }
         
-        cal_output = calendar(events=cal_events, options=cal_options, key="study_calendar")
+        cal_output = calendar(
+            events=cal_events, 
+            options=cal_options, 
+            key="study_calendar",
+            height=1000  
+        )
         
         # Handle Event Click (Modal/Dialog for editing)
         if cal_output and "eventClick" in cal_output:
