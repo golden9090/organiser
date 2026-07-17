@@ -307,7 +307,7 @@ with tab_logging:
             "initialView": "timeGridWeek",
             "slotMinTime": "00:00:00",
             "slotMaxTime": "23:00:00",
-            "height": 1200,  # <-- Added this to force the grid to expand
+            "height": 1100,  # <-- Added this to force the grid to expand
             "allDaySlot": False,
         }
         
