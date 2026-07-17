@@ -149,7 +149,7 @@ with st.sidebar:
 
   # Manage Courses
   with st.expander("Manage Courses"):
-    new_code = st.text_input("Course Code (e.g., COMP101)")
+    new_code = st.text_input("Course Code (e.g., 1001MSC)")
     new_color = st.color_picker("Course Badge Color", "#3B82F6")
     if st.button("Add Course", use_container_width=True) and new_code:
       try:
