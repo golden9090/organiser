@@ -307,7 +307,6 @@ with tab_logging:
             "initialView": "timeGridWeek",
             "slotMinTime": "00:00:00",
             "slotMaxTime": "23:00:00",
-            "height": "auto",
             "allDaySlot": False,
         }
         
