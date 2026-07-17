@@ -10,14 +10,15 @@ from streamlit_calendar import calendar
 # 1. PAGE CONFIG & MODERN STYLING
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="TriTrack | Academic Time Logger",
+    page_title="My Study Time | Academic Time Logger",
     page_icon="⏱️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # Custom sleek UI styling
-st.markdown("""
+st.markdown(
+    """
 <style>
     .reportview-container { background: #f8f9fa; }
     .big-font { font-size:24px !important; font-weight: 600; }
@@ -29,12 +30,14 @@ st.markdown("""
         border-left: 5px solid #3B82F6;
     }
     div[data-testid="stMetric"] {
-        background-color: #f1f5f9;
+        background-color: rgba(150, 150, 150, 0.15);
         padding: 10px;
         border-radius: 8px;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ---------------------------------------------------------
 # 2. SUPABASE INITIALIZATION & AUTH
@@ -49,9 +52,9 @@ supabase = init_supabase()
 
 # Handle OAuth Authentication
 if not st.user.is_logged_in:
-    st.title("⏱️ TriTrack Academic Productivity")
+    st.title("My Study Time")
     st.info("Please sign in with your Google account to access your private study logs.")
-    st.button("🔐 Log in with Google", on_click=st.login, type="primary")
+    st.button("Log in with Google", on_click=st.login, type="primary")
     st.stop()
 
 # Get secure, unique user ID to isolate data
@@ -61,7 +64,7 @@ USER_EMAIL = st.user.get("email", "Student")
 # Sidebar User Profile & Logout
 with st.sidebar:
     st.write(f"👤 **{USER_EMAIL}**")
-    st.button("🚪 Log Out", on_click=st.logout, use_container_width=True)
+    st.button("Log Out", on_click=st.logout, use_container_width=True)
     st.divider()
 
 # ---------------------------------------------------------
@@ -109,47 +112,77 @@ def get_logs(trimester_name):
 # 5. MASTER SETTINGS (SIDEBAR)
 # ---------------------------------------------------------
 with st.sidebar:
-    st.header("⚙️ Master Settings")
-    
-    # Create Trimester
-    with st.expander("➕ Create Trimester"):
-        new_tri = st.text_input("Trimester Name (e.g., Tri 1 2026)")
-        if st.button("Add Trimester", use_container_width=True) and new_tri:
-            try:
-                supabase.table("trimesters").insert({"user_id": USER_ID, "name": new_tri.strip()}).execute()
-                st.success("Trimester added!")
-                st.rerun()
-            except Exception as e:
-                st.error("Trimester already exists or error occurred.")
+  st.header("Master Settings")
+
+  # Manage Trimesters
+  with st.expander("Manage Trimesters"):
+    new_tri = st.text_input("New Trimester (e.g., Tri 1 2026)")
+    if st.button("Add Trimester", use_container_width=True) and new_tri:
+      try:
+        supabase.table("trimesters").insert(
+            {"user_id": USER_ID, "name": new_tri.strip()}
+        ).execute()
+        st.success("Trimester added!")
+        st.rerun()
+      except Exception as e:
+        st.error("Trimester already exists or error occurred.")
 
     trimesters = get_trimesters()
-    if not trimesters:
-        st.warning("⚠️ Create a trimester above to get started!")
-        st.stop()
-        
-    selected_tri = st.selectbox("📅 Active Trimester", trimesters)
-    
-    # Create Course
-    with st.expander("📚 Manage Courses"):
-        new_code = st.text_input("Course Code (e.g., COMP101)")
-        new_color = st.color_picker("Course Badge Color", "#3B82F6")
-        if st.button("Add Course", use_container_width=True) and new_code:
-            try:
-                supabase.table("courses").insert({
-                    "user_id": USER_ID,
-                    "trimester_name": selected_tri,
-                    "course_code": new_code.upper().strip(),
-                    "color": new_color
-                }).execute()
-                st.success("Course added!")
-                st.rerun()
-            except Exception as e:
-                st.error("Course already exists.")
+    if trimesters:
+      st.divider()
+      tri_to_del = st.selectbox("Select Trimester to Delete", trimesters)
+      if st.button(
+          f"🗑️ Delete {tri_to_del}", type="primary", use_container_width=True
+      ):
+        supabase.table("trimesters").delete().eq("user_id", USER_ID).eq(
+            "name", tri_to_del
+        ).execute()
+        st.warning(f"Deleted {tri_to_del}!")
+        st.rerun()
+
+  trimesters = get_trimesters()
+  if not trimesters:
+    st.warning("⚠️ Create a trimester above to get started!")
+    st.stop()
+
+  selected_tri = st.selectbox("Active Trimester", trimesters)
+
+  # Manage Courses
+  with st.expander("Manage Courses"):
+    new_code = st.text_input("Course Code (e.g., COMP101)")
+    new_color = st.color_picker("Course Badge Color", "#3B82F6")
+    if st.button("Add Course", use_container_width=True) and new_code:
+      try:
+        supabase.table("courses").insert({
+            "user_id": USER_ID,
+            "trimester_name": selected_tri,
+            "course_code": new_code.upper().strip(),
+            "color": new_color,
+        }).execute()
+        st.success("Course added!")
+        st.rerun()
+      except Exception as e:
+        st.error("Course already exists.")
+
+    courses_data = get_courses(selected_tri)
+    if courses_data:
+      st.divider()
+      course_codes_list = [c["course_code"] for c in courses_data]
+      course_to_del = st.selectbox("Select Course to Delete", course_codes_list)
+      if st.button(f"Delete {course_to_del}", use_container_width=True):
+        supabase.table("courses").delete().eq("user_id", USER_ID).eq(
+            "trimester_name", selected_tri
+        ).eq("course_code", course_to_del).execute()
+        st.warning(f"Deleted {course_to_del}!")
+        st.rerun()
 
 courses_data = get_courses(selected_tri)
 if not courses_data:
-    st.warning("⚠️ Please add at least one course in the sidebar settings for this trimester!")
-    st.stop()
+  st.warning(
+      "⚠️ Please add at least one course in the sidebar settings for this"
+      " trimester!"
+  )
+  st.stop()
 
 course_codes = [c["course_code"] for c in courses_data]
 color_map = {c["course_code"]: c["color"] for c in courses_data}
@@ -157,7 +190,7 @@ color_map = {c["course_code"]: c["color"] for c in courses_data}
 # ---------------------------------------------------------
 # 6. MAIN INTERFACE TABS
 # ---------------------------------------------------------
-tab_logging, tab_analytics = st.tabs(["📝 1. Time Logging & Calendar", "📊 2. Analytics & Reports"])
+tab_logging, tab_analytics = st.tabs(["Time Logging & Calendar", "Analytics & Reports"])
 
 # =========================================================
 # TAB 1: TIME LOGGING & CALENDAR PREVIEW
@@ -202,7 +235,7 @@ with tab_logging:
         m3.metric("Variation from Plan", format_mins(var_mins) if var_mins is not None else "N/A", 
                   delta=f"{var_mins} min" if var_mins is not None else None, delta_color="inverse")
         
-        submitted = st.form_submit_button("🚀 Log Session", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("Log Session", type="primary", use_container_width=True)
         if submitted:
             log_entry = {
                 "user_id": USER_ID,
@@ -228,7 +261,7 @@ with tab_logging:
     # -----------------------------------------------------
     # Calendar Preview (Past 7 Days)
     # -----------------------------------------------------
-    st.subheader("📅 7-Day Activity Calendar Preview")
+    st.subheader("7-Day Activity Calendar Preview")
     st.caption("Click any event on the interactive calendar below to view details or delete/edit.")
     
     all_logs = get_logs(selected_tri)
@@ -266,12 +299,16 @@ with tab_logging:
             })
             
         cal_options = {
-            "headerToolbar": {"left": "prev,next today", "center": "title", "right": "timeGridWeek,timeGridDay"},
+            "headerToolbar": {
+                "left": "prev,next today",
+                "center": "title",
+                "right": "timeGridWeek,timeGridDay",
+            },
             "initialView": "timeGridWeek",
-            "slotMinTime": "06:00:00",
-            "slotMaxTime": "24:00:00",
-            "height": 500,
-            "allDaySlot": False
+            "slotMinTime": "00:00:00",
+            "slotMaxTime": "23:00:00",
+            "height": "auto",
+            "allDaySlot": False,
         }
         
         cal_output = calendar(events=cal_events, options=cal_options, key="study_calendar")
@@ -281,7 +318,7 @@ with tab_logging:
             clicked_event = cal_output["eventClick"]["event"]
             e_id = clicked_event["extendedProps"]["id"]
             
-            @st.dialog("📝 Edit / Delete Log Entry")
+            @st.dialog("Edit / Delete Log Entry")
             def edit_dialog(log_id):
                 target_log = next((l for l in all_logs if l["id"] == log_id), None)
                 if target_log:
@@ -291,12 +328,12 @@ with tab_logging:
                     
                     col_u, col_d = st.columns(2)
                     with col_u:
-                        if st.button("💾 Update Details", type="primary", use_container_width=True):
+                        if st.button("Update Details", type="primary", use_container_width=True):
                             supabase.table("time_logs").update({"details": new_details}).eq("id", log_id).execute()
                             st.success("Updated!")
                             st.rerun()
                     with col_d:
-                        if st.button("🗑️ Delete Log", use_container_width=True):
+                        if st.button("Delete Log", use_container_width=True):
                             supabase.table("time_logs").delete().eq("id", log_id).execute()
                             st.warning("Deleted!")
                             st.rerun()
@@ -311,32 +348,68 @@ with tab_logging:
     # -----------------------------------------------------
     # Raw Data Table (Interactive & Editable)
     # -----------------------------------------------------
-    st.subheader("📋 My Data Table")
+    st.subheader("My Data Table")
     if all_logs:
-        df_display = pd.DataFrame(all_logs)
-        df_display["True Duration"] = df_display["actual_duration_mins"].apply(format_mins)
-        df_display["Planned Duration"] = df_display["planned_duration_mins"].apply(format_mins)
-        df_display["Variation"] = df_display["variation_mins"].apply(format_mins)
-        
-        cols_show = ["date_logged", "course_code", "lesson_num", "details", "actual_start", "actual_end", 
-                     "True Duration", "Planned Duration", "Variation"]
-        
-        st.dataframe(
-            df_display[cols_show].rename(columns={
-                "date_logged": "Date", "course_code": "Course", "lesson_num": "Lesson", 
-                "details": "Details", "actual_start": "Start", "actual_end": "End"
-            }),
-            use_container_width=True,
-            hide_index=True
+      df_display = pd.DataFrame(all_logs)
+      df_display["True Duration"] = df_display["actual_duration_mins"].apply(
+          format_mins
+      )
+      df_display["Planned Duration"] = df_display[
+          "planned_duration_mins"
+      ].apply(format_mins)
+      df_display["Variation"] = df_display["variation_mins"].apply(format_mins)
+
+      # Filter Widgets
+      fc1, fc2 = st.columns(2)
+      with fc1:
+        unique_dates = sorted(list(df_display["date_logged"].unique()), reverse=True)
+        sel_dates = st.multiselect("Filter by Date", unique_dates, default=[])
+      with fc2:
+        unique_courses = sorted(list(df_display["course_code"].unique()))
+        sel_courses = st.multiselect(
+            "Filter by Course", unique_courses, default=[]
         )
+
+      # Apply Filters
+      if sel_dates:
+        df_display = df_display[df_display["date_logged"].isin(sel_dates)]
+      if sel_courses:
+        df_display = df_display[df_display["course_code"].isin(sel_courses)]
+
+      cols_show = [
+          "date_logged",
+          "course_code",
+          "lesson_num",
+          "details",
+          "actual_start",
+          "actual_end",
+          "True Duration",
+          "Planned Duration",
+          "Variation",
+      ]
+
+      st.dataframe(
+          df_display[cols_show].rename(
+              columns={
+                  "date_logged": "Date",
+                  "course_code": "Course",
+                  "lesson_num": "Lesson",
+                  "details": "Details",
+                  "actual_start": "Start",
+                  "actual_end": "End",
+              }
+          ),
+          use_container_width=True,
+          hide_index=True,
+      )
     else:
-        st.write("No data available.")
+      st.write("No data available.")
 
 # =========================================================
 # TAB 2: ANALYTICS & STATS
 # =========================================================
 with tab_analytics:
-    st.subheader(f"📈 Trimester Performance — {selected_tri}")
+    st.subheader(f"Trimester Performance — {selected_tri}")
     
     all_logs = get_logs(selected_tri)
     if not all_logs:
@@ -347,37 +420,55 @@ with tab_analytics:
     df["date_logged"] = pd.to_datetime(df["date_logged"]).dt.date
     
     # -----------------------------------------------------
-    # Matrix: Hours per Course per Lesson (1-12)
+    # Matrix: Lessons (Rows) x Courses (Columns)
     # -----------------------------------------------------
-    st.markdown("### ⏳ Time Matrix: Lessons 1 to 12")
-    st.caption("Total hours and minutes spent on each specific lesson, with course averages.")
-    
+    st.markdown("### Time Matrix: Lessons 1 to 12")
+    st.caption(
+        "Total hours and minutes spent on each specific lesson by course."
+    )
+
     matrix_rows = []
+
+    # Rows for Lesson 1 to 12
+    for l_num in range(1, 13):
+      row_dict = {"Lesson": f"Lsn {l_num}"}
+      tot_lsn_mins = 0
+
+      for code in course_codes:
+        l_mins = df[
+            (df["course_code"] == code) & (df["lesson_num"] == l_num)
+        ]["actual_duration_mins"].sum()
+        row_dict[code] = format_mins(l_mins) if l_mins > 0 else "-"
+        tot_lsn_mins += l_mins
+
+      row_dict["Total"] = format_mins(tot_lsn_mins) if tot_lsn_mins > 0 else "-"
+      matrix_rows.append(row_dict)
+
+    # Row for Total per Course
+    total_row = {"Lesson": "Total"}
     for code in course_codes:
-        c_df = df[df["course_code"] == code]
-        row_dict = {"Course": code}
-        
-        tot_c_mins = c_df["actual_duration_mins"].sum()
-        
-        for l_num in range(1, 13):
-            l_mins = c_df[c_df["lesson_num"] == l_num]["actual_duration_mins"].sum()
-            row_dict[f"Lsn {l_num}"] = format_mins(l_mins) if l_mins > 0 else "-"
-            
-        row_dict["Total"] = format_mins(tot_c_mins)
-        # Calculate average per trimester lesson (across standard 12 lessons)
-        avg_mins = int(tot_c_mins / 12)
-        row_dict["Avg / Lsn"] = format_mins(avg_mins)
-        matrix_rows.append(row_dict)
-        
+      c_tot = df[df["course_code"] == code]["actual_duration_mins"].sum()
+      total_row[code] = format_mins(c_tot) if c_tot > 0 else "-"
+    total_row["Total"] = format_mins(df["actual_duration_mins"].sum())
+    matrix_rows.append(total_row)
+
+    # Row for Average per Lesson (Total course time / 12)
+    avg_row = {"Lesson": "Avg / Lsn"}
+    for code in course_codes:
+      c_tot = df[df["course_code"] == code]["actual_duration_mins"].sum()
+      avg_row[code] = format_mins(int(c_tot / 12)) if c_tot > 0 else "-"
+    tot_all = df["actual_duration_mins"].sum()
+    avg_row["Total"] = format_mins(int(tot_all / 12)) if tot_all > 0 else "-"
+    matrix_rows.append(avg_row)
+
     df_matrix = pd.DataFrame(matrix_rows)
-    st.dataframe(df_matrix, use_container_width=True, hide_index=True)
-    
+    st.dataframe(df_matrix, use_container_width=True, hide_index=True)    
     st.divider()
     
     # -----------------------------------------------------
     # Customizable Pie Charts (% Time Spent)
     # -----------------------------------------------------
-    st.markdown("### 🥧 Time Breakdown Customizer")
+    st.markdown("### Time Breakdown Customiser")
     
     col_f1, col_f2 = st.columns(2)
     with col_f1:
