@@ -498,7 +498,7 @@ with tab_analytics:
     with col_f2:
         breakdown_by = st.selectbox("Group Time By", [
             "By Lesson Number", "By Course Code", "By Course & Lesson Combo"
-        ], default = "By Course Code")
+        ], index = 1)
         
     # Apply Time Filtering
     today_dt = get_aest_now().date()
