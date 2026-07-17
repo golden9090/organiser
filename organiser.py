@@ -198,8 +198,10 @@ tab_logging, tab_analytics = st.tabs(["Time Logging & Calendar", "Analytics & Re
 with tab_logging:
     st.subheader(f"Log Study Session — {selected_tri}")
     
-    # Input Form
-    with st.form("log_form", clear_on_submit=True):
+    # -----------------------------------------------------
+    # Input Section (Form removed for instant auto-calculation)
+    # -----------------------------------------------------
+    st.container(border=True): # Optional: adds a nice border since we removed the form
         col1, col2, col3 = st.columns([2, 1, 2])
         with col1:
             log_date = st.date_input("Date (AEST)", value=get_aest_now().date())
@@ -223,7 +225,7 @@ with tab_logging:
             default_later = (get_aest_now() + timedelta(hours=1)).time().replace(second=0, microsecond=0)
             a_end = st.time_input("Actual End*", value=default_later)
             
-        # Autocalculate values for display & db
+        # Autocalculate values instantly on change
         p_dur = calc_duration_mins(p_start, p_end) if (p_start and p_end) else None
         a_dur = calc_duration_mins(a_start, a_end)
         var_mins = (a_dur - p_dur) if p_dur is not None else None
@@ -235,7 +237,10 @@ with tab_logging:
         m3.metric("Variation from Plan", format_mins(var_mins) if var_mins is not None else "N/A", 
                   delta=f"{var_mins} min" if var_mins is not None else None, delta_color="inverse")
         
-        submitted = st.form_submit_button("Log Session", type="primary", use_container_width=True)
+        st.write("") # Spacer
+        
+        # Swapped to a standard button
+        submitted = st.button("Log Session", type="primary", use_container_width=True)
         if submitted:
             log_entry = {
                 "user_id": USER_ID,
@@ -254,7 +259,7 @@ with tab_logging:
             }
             supabase.table("time_logs").insert(log_entry).execute()
             st.success("✅ Study time logged successfully!")
-            st.rerun()
+            st.rerun() # This will automatically clear the inputs back to their defaults
 
     st.divider()
     
