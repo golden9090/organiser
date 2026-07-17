@@ -51,7 +51,7 @@ supabase = init_supabase()
 if not st.user.is_logged_in:
     st.title("⏱️ TriTrack Academic Productivity")
     st.info("Please sign in with your Google account to access your private study logs.")
-    st.button("🔐 Log in with Google", on_click=st.login, args=["google"], type="primary")
+    st.button("🔐 Log in with Google", on_click=st.login, type="primary")
     st.stop()
 
 # Get secure, unique user ID to isolate data
