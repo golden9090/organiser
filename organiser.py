@@ -201,7 +201,7 @@ with tab_logging:
     # -----------------------------------------------------
     # Input Section (Form removed for instant auto-calculation)
     # -----------------------------------------------------
-    st.container(border=True): # Optional: adds a nice border since we removed the form
+    with st.container(border=True): # Optional: adds a nice border since we removed the form
         col1, col2, col3 = st.columns([2, 1, 2])
         with col1:
             log_date = st.date_input("Date (AEST)", value=get_aest_now().date())
