@@ -321,7 +321,7 @@ with tab_logging:
             options=cal_options, 
             custom_css="""
                 .fc-timegrid-slot {
-                    height: 4.0em !important; /* Default is 1.5em. Increase this to make rows even taller! */
+                    height: 2.0em !important; /* Default is 1.5em. Increase this to make rows even taller! */
                 }
             """,
             key="study_calendar"
