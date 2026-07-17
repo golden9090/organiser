@@ -314,9 +314,7 @@ with tab_logging:
         cal_output = calendar(
             events=cal_events, 
             options=cal_options, 
-            key="study_calendar",
-            height=1000  
-        )
+            key="study_calendar")
         
         # Handle Event Click (Modal/Dialog for editing)
         if cal_output and "eventClick" in cal_output:
