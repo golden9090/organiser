@@ -64,7 +64,7 @@ USER_EMAIL = st.user.get("email", "Student")
 # Sidebar User Profile & Logout
 with st.sidebar:
     st.write(f"👤 **{USER_EMAIL}**")
-    st.button("Log Out", on_click=st.logout, use_container_width=True)
+    st.button("Log Out", on_click=st.logout, width='stretch')
     st.divider()
 
 # ---------------------------------------------------------
@@ -117,7 +117,7 @@ with st.sidebar:
   # Manage Trimesters
   with st.expander("Manage Trimesters"):
     new_tri = st.text_input("New Trimester (e.g., Tri 1 2026)")
-    if st.button("Add Trimester", use_container_width=True) and new_tri:
+    if st.button("Add Trimester", width='stretch') and new_tri:
       try:
         supabase.table("trimesters").insert(
             {"user_id": USER_ID, "name": new_tri.strip()}
@@ -132,7 +132,7 @@ with st.sidebar:
       st.divider()
       tri_to_del = st.selectbox("Select Trimester to Delete", trimesters)
       if st.button(
-          f"🗑️ Delete {tri_to_del}", type="primary", use_container_width=True
+          f"🗑️ Delete {tri_to_del}", type="primary", width='stretch'
       ):
         supabase.table("trimesters").delete().eq("user_id", USER_ID).eq(
             "name", tri_to_del
@@ -151,7 +151,7 @@ with st.sidebar:
   with st.expander("Manage Courses"):
     new_code = st.text_input("Course Code (e.g., 1001MSC)")
     new_color = st.color_picker("Course Badge Color", "#3B82F6")
-    if st.button("Add Course", use_container_width=True) and new_code:
+    if st.button("Add Course", width='stretch') and new_code:
       try:
         supabase.table("courses").insert({
             "user_id": USER_ID,
@@ -169,7 +169,7 @@ with st.sidebar:
       st.divider()
       course_codes_list = [c["course_code"] for c in courses_data]
       course_to_del = st.selectbox("Select Course to Delete", course_codes_list)
-      if st.button(f"Delete {course_to_del}", use_container_width=True):
+      if st.button(f"Delete {course_to_del}", width='stretch'):
         supabase.table("courses").delete().eq("user_id", USER_ID).eq(
             "trimester_name", selected_tri
         ).eq("course_code", course_to_del).execute()
@@ -241,7 +241,7 @@ with tab_logging:
         st.write("") # Spacer
         
         # Swapped to a standard button
-        submitted = st.button("Log Session", type="primary", use_container_width=True)
+        submitted = st.button("Log Session", type="primary", width='stretch')
         if submitted:
             log_entry = {
                 "user_id": USER_ID,
@@ -343,12 +343,12 @@ with tab_logging:
                     
                     col_u, col_d = st.columns(2)
                     with col_u:
-                        if st.button("Update Details", type="primary", use_container_width=True):
+                        if st.button("Update Details", type="primary", width='stretch'):
                             supabase.table("time_logs").update({"details": new_details}).eq("id", log_id).execute()
                             st.success("Updated!")
                             st.rerun()
                     with col_d:
-                        if st.button("Delete Log", use_container_width=True):
+                        if st.button("Delete Log", width='stretch'):
                             supabase.table("time_logs").delete().eq("id", log_id).execute()
                             st.warning("Deleted!")
                             st.rerun()
@@ -414,7 +414,7 @@ with tab_logging:
                   "actual_end": "End",
               }
           ),
-          use_container_width=True,
+          width='stretch',
           hide_index=True,
       )
     else:
@@ -482,7 +482,7 @@ with tab_analytics:
     matrix_rows.append(avg_row)
 
     df_matrix = pd.DataFrame(matrix_rows)
-    st.dataframe(df_matrix, use_container_width=True, hide_index=True)    
+    st.dataframe(df_matrix, width='stretch', hide_index=True)    
     st.divider()
     
     # -----------------------------------------------------
@@ -540,4 +540,4 @@ with tab_analytics:
             )
             
         fig.update_layout(height=500, margin=dict(t=50, l=0, r=0, b=0))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
