@@ -472,13 +472,32 @@ with tab_analytics:
     total_row["Total"] = format_mins(df["actual_duration_mins"].sum())
     matrix_rows.append(total_row)
 
-    # Row for Average per Lesson (Total course time / 12)
+    # Row for Average per Lesson (Only logged lessons 1-12)
     avg_row = {"Lesson": "Avg / Lsn"}
+    valid_lesson_nums = [str(i) for i in range(1, 13)] # Excludes "Misc"
+
     for code in course_codes:
-      c_tot = df[df["course_code"] == code]["actual_duration_mins"].sum()
-      avg_row[code] = format_mins(int(c_tot / 12)) if c_tot > 0 else "-"
-    tot_all = df["actual_duration_mins"].sum()
-    avg_row["Total"] = format_mins(int(tot_all / 12)) if tot_all > 0 else "-"
+        # Filter for this course AND only lessons 1-12
+        df_course_valid = df[(df["course_code"] == code) & (df["lesson_num"].isin(valid_lesson_nums))]
+        
+        c_tot = df_course_valid["actual_duration_mins"].sum()
+        unique_lessons_logged = df_course_valid["lesson_num"].nunique()
+        
+        if unique_lessons_logged > 0:
+            avg_row[code] = format_mins(int(c_tot / unique_lessons_logged))
+        else:
+            avg_row[code] = "-"
+
+    # Calculate global average (Total valid mins / Total unique course-lesson combinations)
+    df_all_valid = df[df["lesson_num"].isin(valid_lesson_nums)]
+    all_valid_mins = df_all_valid["actual_duration_mins"].sum()
+    all_unique_combos = df_all_valid.groupby(["course_code", "lesson_num"]).ngroups
+
+    if all_unique_combos > 0:
+        avg_row["Total"] = format_mins(int(all_valid_mins / all_unique_combos))
+    else:
+        avg_row["Total"] = "-"
+        
     matrix_rows.append(avg_row)
 
     df_matrix = pd.DataFrame(matrix_rows)
