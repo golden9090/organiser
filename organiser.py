@@ -536,39 +536,39 @@ with tab_analytics:
         st.warning("No logs found for the selected time horizon.")
     else:
         if df_filtered.empty:
-        st.warning("No logs found for the selected time horizon.")
-    else:
-        if breakdown_by == "By Lesson Number":
-            fig = px.pie(
-                df_filtered, values="actual_duration_mins", names="lesson_num",
-                title=f"Time Distribution by Lesson ({time_horizon})",
-                hole=0.4
-            )
-            fig.update_traces(
-                textinfo="percent+label",
-                hovertemplate="Lesson Number: %{label}<br>Minutes: %{value}mins<extra></extra>"
-            )
-        elif breakdown_by == "By Course Code":
-            fig = px.pie(
-                df_filtered, values="actual_duration_mins", names="course_code",
-                title=f"Time Distribution by Course ({time_horizon})",
-                color="course_code", color_discrete_map=color_map,
-                hole=0.4
-            )
-            fig.update_traces(
-                textinfo="percent+label",
-                hovertemplate="Course Code: %{label}<br>Minutes: %{value}mins<extra></extra>"
-            )
+            st.warning("No logs found for the selected time horizon.")
         else:
-            df_filtered["Combo"] = df_filtered["course_code"] + " - Lsn " + df_filtered["lesson_num"].astype(str)
-            fig = px.sunburst(
-                df_filtered, path=["course_code", "Combo"], values="actual_duration_mins",
-                color="course_code", color_discrete_map=color_map,
-                title=f"Sunburst Hierarchy: Course & Lesson Breakdown ({time_horizon})"
-            )
-            fig.update_traces(
-                hovertemplate="<b>%{label}</b><br>Minutes: %{value}mins<extra></extra>"
-            )
-            
-        fig.update_layout(height=500, margin=dict(t=50, l=0, r=0, b=0))
-        st.plotly_chart(fig, width='stretch')
+            if breakdown_by == "By Lesson Number":
+                fig = px.pie(
+                    df_filtered, values="actual_duration_mins", names="lesson_num",
+                    title=f"Time Distribution by Lesson ({time_horizon})",
+                    hole=0.4
+                )
+                fig.update_traces(
+                    textinfo="percent+label",
+                    hovertemplate="Lesson Number: %{label}<br>Minutes: %{value}mins<extra></extra>"
+                )
+            elif breakdown_by == "By Course Code":
+                fig = px.pie(
+                    df_filtered, values="actual_duration_mins", names="course_code",
+                    title=f"Time Distribution by Course ({time_horizon})",
+                    color="course_code", color_discrete_map=color_map,
+                    hole=0.4
+                )
+                fig.update_traces(
+                    textinfo="percent+label",
+                    hovertemplate="Course Code: %{label}<br>Minutes: %{value}mins<extra></extra>"
+                )
+            else:
+                df_filtered["Combo"] = df_filtered["course_code"] + " - Lsn " + df_filtered["lesson_num"].astype(str)
+                fig = px.sunburst(
+                    df_filtered, path=["course_code", "Combo"], values="actual_duration_mins",
+                    color="course_code", color_discrete_map=color_map,
+                    title=f"Sunburst Hierarchy: Course & Lesson Breakdown ({time_horizon})"
+                )
+                fig.update_traces(
+                    hovertemplate="<b>%{label}</b><br>Minutes: %{value}mins<extra></extra>"
+                )
+                
+            fig.update_layout(height=500, margin=dict(t=50, l=0, r=0, b=0))
+            st.plotly_chart(fig, width='stretch')
