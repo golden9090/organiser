@@ -560,7 +560,7 @@ with tab_analytics:
                     hovertemplate="Course Code: %{label}<br>Minutes: %{value}mins<extra></extra>"
                 )
             else:
-                df_filtered["Combo"] = df_filtered["course_code"] + " - Lsn " + df_filtered["lesson_num"].astype(str)
+                df_filtered["Combo"] = df_filtered["course_code"] + " - L" + df_filtered["lesson_num"].astype(str)
                 fig = px.sunburst(
                     df_filtered, path=["course_code", "Combo"], values="actual_duration_mins",
                     color="course_code", color_discrete_map=color_map,
